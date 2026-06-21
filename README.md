@@ -68,7 +68,6 @@ python train_link_prediction.py \
 ## 📚 文档
 
 - [OPEN_PROBLEM_SOLUTIONS.md](OPEN_PROBLEM_SOLUTIONS.md) — 开放问题分析、三种方案详解（含数学原理、参考论文、核心代码）
-- [TFWaveFormer-Notes.md](TFWaveFormer-Notes.md) — 原论文笔记
 
 ## 🔧 环境
 
@@ -98,5 +97,3 @@ Python 3.8+ | PyTorch 1.8+ (CUDA 推荐) | NumPy, Pandas, scikit-learn, tqdm
   year={2026}
 }
 ```
-
-**版本**: 2.0 | **日期**: 2026-06-21
