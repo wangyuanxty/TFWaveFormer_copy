@@ -51,6 +51,9 @@ plots/
 processed_data/
 *.log
 
+# Personal notes
+TFWaveFormer-Notes.md
+
 # OS
 .DS_Store
 Thumbs.db
