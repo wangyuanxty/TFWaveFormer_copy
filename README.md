@@ -1,79 +1,102 @@
-# Adaptive TFWaveFormer - 自适应小波尺度选择
+# TFWaveFormer with Adaptive Wavelet Scale Selection
 
 > 解决论文开放问题：最优小波尺度因数据集而异
+>
+> 原论文：*TFWaveFormer: Temporal-Frequency Collaborative Multi-level Wavelet Transformer* (WWW '26)
+>
+> 原仓库：[SEUFHTong/TFWaveFormer](https://github.com/SEUFHTong/TFWaveFormer)
 
-[![Status](https://img.shields.io/badge/status-stable-green.svg)](PROJECT_FINAL_REPORT.md)
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](INSTALLATION_GUIDE.md)
-[![License](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
-
-## ⚡ 快速开始（3步）
+## ⚡ 快速开始
 
 ```bash
 # 1. 激活环境
 conda activate py312
 
-# 2. 快速测试（2分钟）
-python train_adaptive_tfwaveformer.py \
+# 2. 训练自适应模型
+python train_link_prediction.py \
     --dataset_name wikipedia \
-    --wavelet_mode continuous \
-    --num_epochs 1 --num_runs 1
+    --model_name TFWaveFormerContinuous \
+    --num_epochs 10 --num_runs 1 --gpu 0
 
-# 3. 查看结果
-grep "Learned scales" logs/AdaptiveTFWaveFormer_*/wikipedia/run0.log
+# 3. 所有模式自动对比
+python run_all_modes.py --epochs 10 --runs 1 --gpu 0
 ```
 
-或使用一键脚本：
+## 🎯 三种自适应方案
+
+| 模式 | model_name | 原理 | 推荐场景 |
+|------|------|------|------|
+| **Continuous** | `TFWaveFormerContinuous` | 连续尺度 + 相邻核插值 | 默认首选 |
+| **Implicit** | `TFWaveFormerImplicit` | MLP 隐式核函数 k(t,s,c) | 每通道核定制 |
+| **Gumbel** | `TFWaveFormerGumbel` | Gumbel-Softmax 离散选择 | 可解释分析 |
+
+三种方法都保持原版 K=4 头多尺度融合结构，区别仅在核尺寸的学习方式。
+
+## 📁 核心文件
+
+```
+TFWaveFormer_continuous.py   ← 连续尺度插值
+TFWaveFormer_implicit.py     ← 隐式神经表示
+TFWaveFormer_gumbel.py       ← Gumbel 离散选择
+train_link_prediction.py     ← 训练（已集成三种自适应模型）
+evaluate_link_prediction.py  ← 评估
+run_all_modes.py             ← 自动化对比
+OPEN_PROBLEM_SOLUTIONS.md    ← 方法详解文档
+```
+
+## 🚀 运行示例
+
 ```bash
-bash quick_train.sh wikipedia continuous 1 1
+# 单模式训练
+python train_link_prediction.py \
+    --dataset_name wikipedia \
+    --model_name TFWaveFormerContinuous \
+    --num_epochs 50 --num_runs 5 --gpu 0
+
+# 自动对比三种方法（默认跑 processed_data/ 下所有数据集）
+python run_all_modes.py \
+    --datasets wikipedia reddit uci \
+    --epochs 50 --runs 5 --gpu 0
+
+# 原版固定尺度
+python train_link_prediction.py \
+    --dataset_name wikipedia \
+    --model_name TFWaveFormer \
+    --num_epochs 50 --gpu 0
 ```
 
-## 🎯 四种自适应方案
+## 📚 文档
 
-| 方案 | 速度 | 推荐场景 |
-|------|------|---------|
-| `continuous` | ⭐⭐⭐⭐⭐ | 快速验证、生产部署 |
-| `hyper` | ⭐⭐⭐ | 发论文、灵活实验 |
-| `implicit` | ⭐⭐ | 理论研究、顶会冲刺 |
-| `gumbel` | ⭐⭐⭐⭐ | 可解释性、NAS |
+- [OPEN_PROBLEM_SOLUTIONS.md](OPEN_PROBLEM_SOLUTIONS.md) — 开放问题分析、三种方案详解（含数学原理、参考论文、核心代码）
+- [TFWaveFormer-Notes.md](TFWaveFormer-Notes.md) — 原论文笔记
 
-## 📚 文档导航
+## 🔧 环境
 
-**推荐阅读顺序：**
+```
+Python 3.8+ | PyTorch 1.8+ (CUDA 推荐) | NumPy, Pandas, scikit-learn, tqdm
+```
 
-1. 🚀 [QUICKSTART.md](QUICKSTART.md) - 5分钟上手
-2. 📖 [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) - 所有文档索引
-3. 📊 [PROJECT_FINAL_REPORT.md](PROJECT_FINAL_REPORT.md) - 完整项目报告
-4. 🎓 [ADAPTIVE_METHODS_EXPLAINED.md](ADAPTIVE_METHODS_EXPLAINED.md) - 方法详解
+数据需放在 `processed_data/{dataset}/` 下，包含 `ml_{dataset}.csv`, `ml_{dataset}.npy`, `ml_{dataset}_node.npy`。
 
-## ✨ 核心特性
+## 📊 验证结果
 
-- ✅ **完全独立**：所有代码在 `adaptive/` 目录，不修改原文件
-- ✅ **向后兼容**：Python 3.12+ & NumPy 2.0+ 兼容
-- ✅ **即插即用**：一行命令切换四种模式
-- ✅ **文档完整**：11个文档涵盖所有方面
-- ✅ **研究就绪**：可直接用于论文实验
+3 epochs × 1 run 验证性实验（详见 [OPEN_PROBLEM_SOLUTIONS.md](OPEN_PROBLEM_SOLUTIONS.md) 第 6 节）：
 
-## 📊 项目统计
+| Dataset | Continuous | Implicit | Gumbel |
+|------|:---:|:---:|:---:|
+| **reddit** | 0.9916 | 0.9922 | 0.9914 |
+| **wikipedia** | 0.9926 | 0.9928 | 0.9924 |
+| **uci** | 0.9487 | 0.9480 | 0.9519 |
 
-- Python 文件：7 个
-- 代码行数：1,881 行
-- 文档数量：11 个
-- 测试覆盖：14/14 (100%)
+## 🔗 引用
 
-## 🔧 安装
+```bibtex
+@inproceedings{tfwaveformer2026,
+  title={TFWaveFormer: Temporal-Frequency Collaborative Multi-level Wavelet Transformer},
+  author={Feng, Hantong and Wu, Yonggang and Chen, Duxin and Yu, Wenwu},
+  booktitle={WWW},
+  year={2026}
+}
+```
 
-详见 [INSTALLATION_GUIDE.md](INSTALLATION_GUIDE.md)
-
-## 🎓 研究价值
-
-- 解决论文开放问题：自适应小波尺度选择
-- 跨领域创新：引入 NeRF/SIREN 到时序图
-- 四种方案：从工程到理论全覆盖
-
-## 📧 问题反馈
-
-查阅 [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) 获取帮助
-
----
-
-**版本**：1.0.0 | **状态**：✅ 完成且验证 | **日期**：2026-06-16
+**版本**: 2.0 | **日期**: 2026-06-21
