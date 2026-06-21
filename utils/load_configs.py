@@ -15,7 +15,8 @@ def get_link_prediction_args(is_evaluation: bool = False):
                         choices=['wikipedia', 'reddit', 'mooc', 'lastfm', 'myket', 'enron', 'SocialEvo', 'uci'])
     parser.add_argument('--batch_size', type=int, default=200, help='batch size')
     parser.add_argument('--model_name', type=str, default='DyGFormer', help='name of the model, note that EdgeBank is only applicable for evaluation',
-                        choices=['JODIE', 'DyRep', 'TGAT', 'TGN', 'CAWN', 'EdgeBank', 'TCL', 'GraphMixer', 'DyGFormer','TFWaveFormer'])
+                        choices=['JODIE', 'DyRep', 'TGAT', 'TGN', 'CAWN', 'EdgeBank', 'TCL', 'GraphMixer', 'DyGFormer','TFWaveFormer',
+                                 'TFWaveFormerContinuous','TFWaveFormerImplicit','TFWaveFormerGumbel','AdaptiveTFWaveFormer'])
     parser.add_argument('--gpu', type=int, default=0, help='number of gpu to use')
     parser.add_argument('--num_neighbors', type=int, default=20, help='number of neighbors to sample for each node')
     parser.add_argument('--sample_neighbor_strategy', type=str, default='recent', choices=['uniform', 'recent', 'time_interval_aware'], help='how to sample historical neighbors')
@@ -49,6 +50,9 @@ def get_link_prediction_args(is_evaluation: bool = False):
     parser.add_argument('--negative_sample_strategy', type=str, default='random', choices=['random', 'historical', 'inductive'],
                         help='strategy for the negative edge sampling')
     parser.add_argument('--load_best_configs', action='store_true', default=False, help='whether to load the best configurations')
+    parser.add_argument('--wavelet_mode', type=str, default='continuous',
+                        choices=['continuous', 'implicit', 'gumbel'],
+                        help='adaptive wavelet convolution mode for AdaptiveTFWaveFormer')
 
     try:
         args = parser.parse_args()
@@ -232,7 +236,7 @@ def load_link_prediction_best_configs(args: argparse.Namespace):
             args.dropout = 0.0
         else:
             args.dropout = 0.1
-    elif args.model_name in ['TFWaveFormer']:
+    elif args.model_name in ['TFWaveFormer', 'TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel']:
         args.num_layers = 2
         if args.dataset_name in ['reddit']:
             args.max_input_sequence_length = 64

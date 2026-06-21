@@ -10,6 +10,9 @@ import json
 import torch
 import torch.nn as nn
 from models.TFWaveFormer import TFWaveFormer
+from TFWaveFormer_continuous import TFWaveFormerContinuous
+from TFWaveFormer_implicit import TFWaveFormerImplicit
+from TFWaveFormer_gumbel import TFWaveFormerGumbel
 from models.TGAT import TGAT
 from models.MemoryModel import MemoryModel, compute_src_dst_node_time_shifts
 from models.CAWN import CAWN
@@ -125,6 +128,21 @@ if __name__ == "__main__":
             dynamic_backbone = TFWaveFormer(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=train_neighbor_sampler,
                                             time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
                                             num_layers=args.num_layers, num_heads=args.num_heads, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+        elif args.model_name == 'TFWaveFormerContinuous':
+            dynamic_backbone = TFWaveFormerContinuous(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=train_neighbor_sampler,
+                                                      time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                      num_layers=args.num_layers, num_heads=args.num_heads, dropout=args.dropout,
+                                                      max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+        elif args.model_name == 'TFWaveFormerImplicit':
+            dynamic_backbone = TFWaveFormerImplicit(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=train_neighbor_sampler,
+                                                    time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                    num_layers=args.num_layers, num_heads=args.num_heads, dropout=args.dropout,
+                                                    max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+        elif args.model_name == 'TFWaveFormerGumbel':
+            dynamic_backbone = TFWaveFormerGumbel(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=train_neighbor_sampler,
+                                                  time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                  num_layers=args.num_layers, num_heads=args.num_heads, dropout=args.dropout,
+                                                  max_input_sequence_length=args.max_input_sequence_length, device=args.device)
         else:
             raise ValueError(f"Wrong value for model_name {args.model_name}!")
         link_predictor = MergeLayer(input_dim1=node_raw_features.shape[1], input_dim2=node_raw_features.shape[1],
@@ -150,9 +168,12 @@ if __name__ == "__main__":
         for epoch in range(args.num_epochs):
 
             model.train()
-            if args.model_name in ['DyRep', 'TGAT', 'TGN', 'CAWN', 'TCL', 'GraphMixer', 'DyGFormer','TFWaveFormer']:
+            if args.model_name in ['DyRep', 'TGAT', 'TGN', 'CAWN', 'TCL', 'GraphMixer', 'DyGFormer','TFWaveFormer',
+                                    'TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel']:
                 # training, only use training graph
                 model[0].set_neighbor_sampler(train_neighbor_sampler)
+            if args.model_name == 'TFWaveFormerGumbel':
+                model[0].anneal_temperature(epoch, args.num_epochs)
             if args.model_name in ['JODIE', 'DyRep', 'TGN']:
                 # reinitialize memory of memory-based models at the start of each epoch
                 model[0].memory_bank.__init_memory_bank__()
@@ -241,7 +262,7 @@ if __name__ == "__main__":
                         model[0].compute_src_dst_node_temporal_embeddings(src_node_ids=batch_neg_src_node_ids,
                                                                           dst_node_ids=batch_neg_dst_node_ids,
                                                                           node_interact_times=batch_node_interact_times)
-                elif args.model_name in ['TFWaveFormer']:
+                elif args.model_name in ['TFWaveFormer', 'TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel']:
                     # get temporal embedding of source and destination nodes
                     # two Tensors, with shape (batch_size, node_feat_dim)
                     batch_src_node_embeddings, batch_dst_node_embeddings = \
@@ -267,6 +288,12 @@ if __name__ == "__main__":
                 labels = torch.cat([torch.ones_like(positive_probabilities), torch.zeros_like(negative_probabilities)], dim=0)
 
                 loss = loss_func(input=predicts, target=labels)
+
+                # Diversity loss for Gumbel mode
+                if args.model_name == 'TFWaveFormerGumbel':
+                    div_loss = sum(l.wavelet_filter.diversity_loss()
+                                    for l in model[0].wavelet_transformers)
+                    loss = loss + 0.01 * div_loss
 
                 train_losses.append(loss.item())
 
@@ -458,6 +485,15 @@ if __name__ == "__main__":
             logger.info(f'new node test {metric_name}, {average_new_node_test_metric:.4f}')
             new_node_test_metric_dict[metric_name] = average_new_node_test_metric
 
+        # Print learned scales for adaptive models
+        if args.model_name in ['TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel']:
+            learned = model[0].get_learned_scales()
+            logger.info(f'Learned scales per layer:')
+            for s in learned:
+                vals = s.get('values', [])
+                vals_str = ', '.join(f'{v:.2f}' for v in vals)
+                logger.info(f"  Layer {s['layer']}: scales=[{vals_str}], mean={s['mean']:.2f}, std={s['std']:.2f}")
+
         single_run_time = time.time() - run_start_time
         logger.info(f'Run {run + 1} cost {single_run_time:.2f} seconds.')
 
@@ -485,6 +521,12 @@ if __name__ == "__main__":
                 "test metrics": {metric_name: f'{test_metric_dict[metric_name]:.4f}' for metric_name in test_metric_dict},
                 "new node test metrics": {metric_name: f'{new_node_test_metric_dict[metric_name]:.4f}' for metric_name in new_node_test_metric_dict}
             }
+        # Save learned scales for adaptive models
+        if args.model_name in ['TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel']:
+            result_json["learned_scales"] = [
+                {k: v for k, v in s.items()}
+                for s in model[0].get_learned_scales()
+            ]
         result_json = json.dumps(result_json, indent=4)
 
         save_result_folder = f"./saved_results/{args.model_name}/{args.dataset_name}"

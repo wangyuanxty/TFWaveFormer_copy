@@ -21,6 +21,9 @@ from utils.DataLoader import get_idx_data_loader, get_link_prediction_data
 from utils.EarlyStopping import EarlyStopping
 from utils.load_configs import get_link_prediction_args
 from models.TFWaveFormer import TFWaveFormer
+from TFWaveFormer_continuous import TFWaveFormerContinuous
+from TFWaveFormer_implicit import TFWaveFormerImplicit
+from TFWaveFormer_gumbel import TFWaveFormerGumbel
 
 if __name__ == "__main__":
 
@@ -77,7 +80,10 @@ if __name__ == "__main__":
             set_random_seed(seed=run)
 
             args.seed = run
-            args.load_model_name = f'{args.model_name}_seed{args.seed}'
+            if args.model_name == 'AdaptiveTFWaveFormer':
+                args.load_model_name = f'{args.model_name}_{args.wavelet_mode}_seed{args.seed}'
+            else:
+                args.load_model_name = f'{args.model_name}_seed{args.seed}'
             args.save_result_name = f'{args.negative_sample_strategy}_negative_sampling_{args.model_name}_seed{args.seed}'
 
             # set up logger
@@ -136,6 +142,34 @@ if __name__ == "__main__":
                 dynamic_backbone = TFWaveFormer(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=full_neighbor_sampler,
                                                 time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
                                                 num_layers=args.num_layers, num_heads=args.num_heads, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+            elif args.model_name == 'TFWaveFormerContinuous':
+                dynamic_backbone = TFWaveFormerContinuous(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=full_neighbor_sampler,
+                                                          time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                          num_layers=args.num_layers, num_heads=args.num_heads,
+                                                          dropout=args.dropout, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+            elif args.model_name == 'TFWaveFormerImplicit':
+                dynamic_backbone = TFWaveFormerImplicit(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=full_neighbor_sampler,
+                                                        time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                        num_layers=args.num_layers, num_heads=args.num_heads,
+                                                        dropout=args.dropout, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+            elif args.model_name == 'TFWaveFormerGumbel':
+                dynamic_backbone = TFWaveFormerGumbel(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=full_neighbor_sampler,
+                                                      time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                                      num_layers=args.num_layers, num_heads=args.num_heads,
+                                                      dropout=args.dropout, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
+            elif args.model_name == 'AdaptiveTFWaveFormer':
+                _WAVELET_MODELS = {
+                    'continuous': ('TFWaveFormer_continuous', 'TFWaveFormerContinuous'),
+                    'implicit':   ('TFWaveFormer_implicit',   'TFWaveFormerImplicit'),
+                    'gumbel':     ('TFWaveFormer_gumbel',     'TFWaveFormerGumbel'),
+                }
+                mod_name, cls_name = _WAVELET_MODELS[args.wavelet_mode]
+                mod = __import__(mod_name)
+                ModelCls = getattr(mod, cls_name)
+                dynamic_backbone = ModelCls(node_raw_features=node_raw_features, edge_raw_features=edge_raw_features, neighbor_sampler=full_neighbor_sampler,
+                                            time_feat_dim=args.time_feat_dim, channel_embedding_dim=args.channel_embedding_dim,
+                                            num_layers=args.num_layers, num_heads=args.num_heads,
+                                            dropout=args.dropout, max_input_sequence_length=args.max_input_sequence_length, device=args.device)
             else:
                 raise ValueError(f"Wrong value for model_name {args.model_name}!")
             link_predictor = MergeLayer(input_dim1=node_raw_features.shape[1], input_dim2=node_raw_features.shape[1],
@@ -152,6 +186,19 @@ if __name__ == "__main__":
             early_stopping.load_checkpoint(model, map_location='cpu')
 
             model = convert_to_gpu(model, device=args.device)
+
+            # Print learned scales for adaptive models
+            if args.model_name in ['TFWaveFormerContinuous', 'TFWaveFormerImplicit',
+                                    'TFWaveFormerGumbel', 'AdaptiveTFWaveFormer']:
+                if hasattr(model[0], 'get_learned_scales'):
+                    learned = model[0].get_learned_scales()
+                    logger.info(f'Learned wavelet scales:')
+                    for s in learned:
+                        vals = s.get('values', [])
+                        vals_str = ', '.join(f'{v:.2f}' for v in vals)
+                        logger.info(f"  Layer {s['layer']}: scales=[{vals_str}], "
+                                    f"mean={s['mean']:.2f}, std={s['std']:.2f}")
+
             # put the node raw messages of memory-based models on device
             if args.model_name in ['JODIE', 'DyRep', 'TGN']:
                 for node_id, node_raw_messages in model[0].memory_bank.node_raw_messages.items():

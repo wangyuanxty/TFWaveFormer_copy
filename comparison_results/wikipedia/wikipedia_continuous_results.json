@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "mode": "continuous",
+  "dataset": "wikipedia",
+  "epochs": 3,
+  "runs": 1,
+  "elapsed_time": 376.77803587913513,
+  "metrics": {
+    "validate metrics": {
+      "average_precision": "0.9939",
+      "roc_auc": "0.9935"
+    },
+    "new node validate metrics": {
+      "average_precision": "0.9909",
+      "roc_auc": "0.9902"
+    },
+    "test metrics": {
+      "average_precision": "0.9926",
+      "roc_auc": "0.9920"
+    },
+    "new node test metrics": {
+      "average_precision": "0.9876",
+      "roc_auc": "0.9872"
+    }
+  },
+  "learned_scales": [
+    {
+      "layer": 0,
+      "mean": 10.519490242004395,
+      "std": 2.495075225830078,
+      "min": 7.531844615936279,
+      "max": 14.297316551208496,
+      "values": [
+        9.290310859680176,
+        7.531844615936279,
+        10.958490371704102,
+        14.297316551208496
+      ]
+    },
+    {
+      "layer": 1,
+      "mean": 8.775869369506836,
+      "std": 2.29189133644104,
+      "min": 5.19862174987793,
+      "max": 11.532508850097656,
+      "values": [
+        8.812939643859863,
+        5.19862174987793,
+        11.532508850097656,
+        9.559405326843262
+      ]
+    }
+  ],
+  "timestamp": "2026-06-21T03:23:40.133293"
+}

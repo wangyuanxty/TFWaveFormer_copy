@@ -1,0 +1,176 @@
+{
+  "dataset": "uci",
+  "epochs": 3,
+  "runs": 1,
+  "batch_size": 200,
+  "start_time": "2026-06-21T03:36:32.183774",
+  "results": [
+    {
+      "status": "success",
+      "mode": "continuous",
+      "dataset": "uci",
+      "epochs": 3,
+      "runs": 1,
+      "elapsed_time": 152.2923629283905,
+      "metrics": {
+        "validate metrics": {
+          "average_precision": "0.9402",
+          "roc_auc": "0.9314"
+        },
+        "new node validate metrics": {
+          "average_precision": "0.9040",
+          "roc_auc": "0.8812"
+        },
+        "test metrics": {
+          "average_precision": "0.9487",
+          "roc_auc": "0.9366"
+        },
+        "new node test metrics": {
+          "average_precision": "0.9263",
+          "roc_auc": "0.9107"
+        }
+      },
+      "learned_scales": [
+        {
+          "layer": 0,
+          "mean": 10.519490242004395,
+          "std": 2.495075225830078,
+          "min": 7.531844615936279,
+          "max": 14.297316551208496,
+          "values": [
+            9.290310859680176,
+            7.531844615936279,
+            10.958490371704102,
+            14.297316551208496
+          ]
+        },
+        {
+          "layer": 1,
+          "mean": 8.775869369506836,
+          "std": 2.29189133644104,
+          "min": 5.19862174987793,
+          "max": 11.532508850097656,
+          "values": [
+            8.812939643859863,
+            5.19862174987793,
+            11.532508850097656,
+            9.559405326843262
+          ]
+        }
+      ],
+      "timestamp": "2026-06-21T03:39:04.501940"
+    },
+    {
+      "status": "success",
+      "mode": "implicit",
+      "dataset": "uci",
+      "epochs": 3,
+      "runs": 1,
+      "elapsed_time": 159.40849542617798,
+      "metrics": {
+        "validate metrics": {
+          "average_precision": "0.9391",
+          "roc_auc": "0.9309"
+        },
+        "new node validate metrics": {
+          "average_precision": "0.9007",
+          "roc_auc": "0.8790"
+        },
+        "test metrics": {
+          "average_precision": "0.9480",
+          "roc_auc": "0.9380"
+        },
+        "new node test metrics": {
+          "average_precision": "0.9246",
+          "roc_auc": "0.9099"
+        }
+      },
+      "learned_scales": [
+        {
+          "layer": 0,
+          "mean": 10.519490242004395,
+          "std": 2.495075225830078,
+          "min": 7.531844615936279,
+          "max": 14.297316551208496,
+          "values": [
+            9.290310859680176,
+            7.531844615936279,
+            10.958490371704102,
+            14.297316551208496
+          ]
+        },
+        {
+          "layer": 1,
+          "mean": 10.316195487976074,
+          "std": 1.7730283737182617,
+          "min": 7.788123607635498,
+          "max": 12.602385520935059,
+          "values": [
+            9.7561616897583,
+            11.118110656738281,
+            7.788123607635498,
+            12.602385520935059
+          ]
+        }
+      ],
+      "timestamp": "2026-06-21T03:41:43.928414"
+    },
+    {
+      "status": "success",
+      "mode": "gumbel",
+      "dataset": "uci",
+      "epochs": 3,
+      "runs": 1,
+      "elapsed_time": 169.98761248588562,
+      "metrics": {
+        "validate metrics": {
+          "average_precision": "0.9430",
+          "roc_auc": "0.9334"
+        },
+        "new node validate metrics": {
+          "average_precision": "0.9088",
+          "roc_auc": "0.8847"
+        },
+        "test metrics": {
+          "average_precision": "0.9519",
+          "roc_auc": "0.9410"
+        },
+        "new node test metrics": {
+          "average_precision": "0.9288",
+          "roc_auc": "0.9125"
+        }
+      },
+      "learned_scales": [
+        {
+          "layer": 0,
+          "mean": 10.0,
+          "std": 4.123105625617661,
+          "min": 3.0,
+          "max": 13.0,
+          "values": [
+            11,
+            3,
+            13,
+            13
+          ]
+        },
+        {
+          "layer": 1,
+          "mean": 11.0,
+          "std": 0.0,
+          "min": 11.0,
+          "max": 11.0,
+          "values": [
+            11,
+            11,
+            11,
+            11
+          ]
+        }
+      ],
+      "timestamp": "2026-06-21T03:44:33.941114"
+    }
+  ],
+  "total_time": 481.75733971595764,
+  "end_time": "2026-06-21T03:44:33.941114"
+}

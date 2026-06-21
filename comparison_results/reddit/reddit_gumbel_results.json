@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "mode": "gumbel",
+  "dataset": "reddit",
+  "epochs": 3,
+  "runs": 1,
+  "elapsed_time": 2783.413356781006,
+  "metrics": {
+    "validate metrics": {
+      "average_precision": "0.9907",
+      "roc_auc": "0.9896"
+    },
+    "new node validate metrics": {
+      "average_precision": "0.9855",
+      "roc_auc": "0.9836"
+    },
+    "test metrics": {
+      "average_precision": "0.9914",
+      "roc_auc": "0.9905"
+    },
+    "new node test metrics": {
+      "average_precision": "0.9874",
+      "roc_auc": "0.9856"
+    }
+  },
+  "learned_scales": [
+    {
+      "layer": 0,
+      "mean": 8.0,
+      "std": 4.58257569495584,
+      "min": 3.0,
+      "max": 15.0,
+      "values": [
+        5,
+        15,
+        3,
+        9
+      ]
+    },
+    {
+      "layer": 1,
+      "mean": 13.0,
+      "std": 1.4142135623730951,
+      "min": 11.0,
+      "max": 15.0,
+      "values": [
+        11,
+        13,
+        15,
+        13
+      ]
+    }
+  ],
+  "timestamp": "2026-06-21T03:17:23.324675"
+}

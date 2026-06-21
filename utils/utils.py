@@ -136,6 +136,15 @@ class NeighborSampler:
         :param return_sampled_probabilities: boolean, whether return the sampled probabilities of neighbors
         :return: neighbors, edge_ids, timestamps and sampled_probabilities (if return_sampled_probabilities is True) with shape (historical_nodes_num, )
         """
+        # FIXED: Add bounds checking to prevent IndexError
+        if node_id >= len(self.nodes_neighbor_times) or node_id < 0:
+            if return_sampled_probabilities:
+                return np.array([], dtype=np.longlong), np.array([], dtype=np.longlong), \
+                       np.array([], dtype=np.float32), np.array([], dtype=np.float32)
+            else:
+                return np.array([], dtype=np.longlong), np.array([], dtype=np.longlong), \
+                       np.array([], dtype=np.float32), None
+
         # return index i, which satisfies list[i - 1] < v <= list[i]
         # return 0 for the first position in self.nodes_neighbor_times since the value at the first position is empty
         i = np.searchsorted(self.nodes_neighbor_times[node_id], interact_time)
@@ -168,9 +177,13 @@ class NeighborSampler:
 
         # extracts all neighbors ids, edge ids and interaction times of nodes in node_ids, which happened before the corresponding time in node_interact_times
         for idx, (node_id, node_interact_time) in enumerate(zip(node_ids, node_interact_times)):
+            # FIXED: Convert to Python scalars for NumPy 2.0+ compatibility
+            node_id_scalar = node_id.item() if hasattr(node_id, 'item') else int(node_id)
+            node_interact_time_scalar = node_interact_time.item() if hasattr(node_interact_time, 'item') else float(node_interact_time)
+
             # find neighbors that interacted with node_id before time node_interact_time
             node_neighbor_ids, node_edge_ids, node_neighbor_times, node_neighbor_sampled_probabilities = \
-                self.find_neighbors_before(node_id=node_id, interact_time=node_interact_time, return_sampled_probabilities=self.sample_neighbor_strategy == 'time_interval_aware')
+                self.find_neighbors_before(node_id=node_id_scalar, interact_time=node_interact_time_scalar, return_sampled_probabilities=self.sample_neighbor_strategy == 'time_interval_aware')
 
             if len(node_neighbor_ids) > 0:
                 if self.sample_neighbor_strategy in ['uniform', 'time_interval_aware']:

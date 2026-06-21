@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "mode": "gumbel",
+  "dataset": "wikipedia",
+  "epochs": 3,
+  "runs": 1,
+  "elapsed_time": 397.2545876502991,
+  "metrics": {
+    "validate metrics": {
+      "average_precision": "0.9941",
+      "roc_auc": "0.9937"
+    },
+    "new node validate metrics": {
+      "average_precision": "0.9908",
+      "roc_auc": "0.9903"
+    },
+    "test metrics": {
+      "average_precision": "0.9924",
+      "roc_auc": "0.9920"
+    },
+    "new node test metrics": {
+      "average_precision": "0.9880",
+      "roc_auc": "0.9873"
+    }
+  },
+  "learned_scales": [
+    {
+      "layer": 0,
+      "mean": 10.0,
+      "std": 3.3166247903554,
+      "min": 5.0,
+      "max": 13.0,
+      "values": [
+        9,
+        5,
+        13,
+        13
+      ]
+    },
+    {
+      "layer": 1,
+      "mean": 10.0,
+      "std": 3.0,
+      "min": 5.0,
+      "max": 13.0,
+      "values": [
+        11,
+        5,
+        13,
+        11
+      ]
+    }
+  ],
+  "timestamp": "2026-06-21T03:36:32.167737"
+}

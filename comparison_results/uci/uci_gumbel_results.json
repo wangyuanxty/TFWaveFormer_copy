@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "mode": "gumbel",
+  "dataset": "uci",
+  "epochs": 3,
+  "runs": 1,
+  "elapsed_time": 169.98761248588562,
+  "metrics": {
+    "validate metrics": {
+      "average_precision": "0.9430",
+      "roc_auc": "0.9334"
+    },
+    "new node validate metrics": {
+      "average_precision": "0.9088",
+      "roc_auc": "0.8847"
+    },
+    "test metrics": {
+      "average_precision": "0.9519",
+      "roc_auc": "0.9410"
+    },
+    "new node test metrics": {
+      "average_precision": "0.9288",
+      "roc_auc": "0.9125"
+    }
+  },
+  "learned_scales": [
+    {
+      "layer": 0,
+      "mean": 10.0,
+      "std": 4.123105625617661,
+      "min": 3.0,
+      "max": 13.0,
+      "values": [
+        11,
+        3,
+        13,
+        13
+      ]
+    },
+    {
+      "layer": 1,
+      "mean": 11.0,
+      "std": 0.0,
+      "min": 11.0,
+      "max": 11.0,
+      "values": [
+        11,
+        11,
+        11,
+        11
+      ]
+    }
+  ],
+  "timestamp": "2026-06-21T03:44:33.941114"
+}

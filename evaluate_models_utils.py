@@ -36,7 +36,8 @@ def evaluate_model_link_prediction(model_name: str, model: nn.Module, neighbor_s
     assert evaluate_neg_edge_sampler.seed is not None
     evaluate_neg_edge_sampler.reset_random_state()
 
-    if model_name in ['DyRep', 'TGAT', 'TGN', 'CAWN', 'TCL', 'GraphMixer', 'DyGFormer', 'TFWaveFormer']:
+    if model_name in ['DyRep', 'TGAT', 'TGN', 'CAWN', 'TCL', 'GraphMixer', 'DyGFormer', 'TFWaveFormer',
+                       'TFWaveFormerContinuous', 'TFWaveFormerImplicit', 'TFWaveFormerGumbel', 'AdaptiveTFWaveFormer']:
         # evaluation phase use all the graph information
         model[0].set_neighbor_sampler(neighbor_sampler)
 
@@ -120,7 +121,8 @@ def evaluate_model_link_prediction(model_name: str, model: nn.Module, neighbor_s
                                                                       node_interact_times=batch_node_interact_times,
                                                                       num_neighbors=num_neighbors,
                                                                       time_gap=time_gap)
-            elif model_name in ['TFWaveFormer']:
+            elif model_name in ['TFWaveFormer', 'TFWaveFormerContinuous', 'TFWaveFormerImplicit',
+                                 'TFWaveFormerGumbel', 'AdaptiveTFWaveFormer']:
                 # get temporal embedding of source and destination nodes
                 # two Tensors, with shape (batch_size, node_feat_dim)
                 batch_src_node_embeddings, batch_dst_node_embeddings = \
