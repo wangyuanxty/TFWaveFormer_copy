@@ -70,7 +70,7 @@ zk = (1 - alpha) * base_convs[str(lo)](x) + alpha * base_convs[str(hi)](x)
 
 通道 ID 作为 MLP 输入使得不同通道可以学出不同的核形状——高频通道可能倾向尖锐核，低频通道倾向平滑核。
 
-**实现**：`implicit_net` 为 3 层 MLP（3→128→128→1），GELU 激活，Tanh 输出。批量加速：172 通道 × ks 位置的查询网格化为 `(D*ks, 3)`，MLP 一次前向完成。
+**实现**：`implicit_net` 为 3 层 MLP（3→128→128→1），GELU 激活，Tanh 输出。代码中 D 为特征通道数（d_model=172）。批量加速：172 通道 × ks 位置的查询网格化为 `(D*ks, 3)`，MLP 一次前向完成。
 
 ```python
 pos = linspace(-1, 1, ks).expand(D, ks)
