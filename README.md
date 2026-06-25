@@ -145,7 +145,7 @@ run_all_modes.py             ← 自动化对比
 
 ## 初步实验
 
-在三个数据集上用 3 epochs × 1 run 进行了快速验证，超参通过 `--load_best_configs` 自动加载（自适应模型共享 TFWaveFormer 的配置）。
+由于算力不足所以只在三个数据集上用 3 epochs × 1 run 进行了快速验证，超参通过 `--load_best_configs` 自动加载（自适应模型共享 TFWaveFormer 的配置）。
 
 **Table 1: Transductive (test AP / test AUC)**
 
