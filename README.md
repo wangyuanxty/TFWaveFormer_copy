@@ -4,7 +4,7 @@
 >
 > 原仓库：[SEUFHTong/TFWaveFormer](https://github.com/SEUFHTong/TFWaveFormer)
 >
-> 本实验代码仓库：[wangyuanxty/TFWaveFormer_copy](https://github.com/wangyuanxty/TFWaveFormer_copy)
+本实验代码仓库：[https://github.com/wangyuanxty/TFWaveFormer_copy](https://github.com/wangyuanxty/TFWaveFormer_copy)
 
 ## 动机
 
